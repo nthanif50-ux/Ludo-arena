@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0722" />
+  <title>LUDO ARENA — Bangladesh Premier Tournament Network</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    .font-heading { font-family: 'Rajdhani', sans-serif; }
+    .glow-purple { box-shadow: 0 0 30px rgba(168, 85, 247, 0.35); }
+    .glow-amber { box-shadow: 0 0 25px rgba(245, 158, 11, 0.35); }
+    .glow-emerald { box-shadow: 0 0 25px rgba(16, 185, 129, 0.35); }
+    .text-glow-purple { text-shadow: 0 0 12px rgba(192, 132, 252, 0.6); }
+    .text-glow-gold { text-shadow: 0 0 12px rgba(251, 191, 36, 0.6); }
+    
+    @keyframes dice-roll {
+      0% { transform: rotate(0deg) scale(0.9); }
+      50% { transform: rotate(180deg) scale(1.18) translateY(-6px); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .animate-dice { animation: dice-roll 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0c061a; }
+    ::-webkit-scrollbar-thumb { background: #3b1d75; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-[#0b061a] text-slate-100 antialiased selection:bg-purple-600 selection:text-white pb-24">
+
+  <!-- ========================================== -->
+  <!-- 1. SPLASH LOADING SCREEN -->
+  <!-- ========================================== -->
+  <div id="splashScreen" class="fixed inset-0 z-50 bg-[#0d0722] flex flex-col items-center justify-center p-6 select-none transition-opacity duration-500">
+    <div class="relative mb-6">
+      <div class="w-24 h-24 rounded-3xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-amber-400 p-1 shadow-2xl glow-purple animate-pulse">
+        <div class="w-full h-full bg-[#120728] rounded-[22px] flex items-center justify-center">
+          <span class="font-heading font-black text-amber-400 text-4xl tracking-tighter">LA</span>
+        </div>
+      </div>
+      <span class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-wider font-heading">
+        BDT ARENA
+      </span>
+    </div>
+    <h1 class="text-3xl font-black text-white font-heading tracking-widest text-glow-purple mb-1">
+      LUDO ARENA
+    </h1>
+    <p class="text-xs text-purple-300/80 mb-6 font-medium">
+      Connecting to Live Tournament Network...
+    </p>
+    <div class="w-56 bg-purple-950/80 rounded-full h-2 overflow-hidden border border-purple-900 shadow-inner">
+      <div id="splashProgressBar" class="bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 h-full rounded-full transition-all duration-300" style="width: 25%"></div>
+    </div>
+    <span id="splashProgressText" class="text-[11px] text-purple-400 mt-2 font-mono">Loading 25%</span>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. AUTH SCREEN (1 PHONE = 1 ACCOUNT CHECK) -->
+  <!-- ========================================== -->
+  <div id="authScreen" class="hidden fixed inset-0 z-40 bg-[#0a0518] flex flex-col items-center justify-center p-4 select-none overflow-y-auto">
+    <div class="relative max-w-md w-full bg-gradient-to-b from-[#1d0e3d] via-[#14082c] to-[#0f0524] border-2 border-purple-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl glow-purple my-auto">
+      
+      <!-- Brand Logo -->
+      <div class="text-center mb-4">
+        <div class="relative inline-block mb-2">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-amber-400 p-0.5 shadow-xl">
+            <div class="w-full h-full bg-[#120728] rounded-[14px] flex items-center justify-center font-heading font-black text-amber-400 text-3xl">
+              LA
+            </div>
+          </div>
+          <span class="absolute -bottom-1 -right-2 px-1.5 py-0.2 rounded-full bg-amber-500 text-black font-black text-[9px] uppercase tracking-wider font-heading">
+            BDT
+          </span>
+        </div>
+        <h2 class="text-2xl font-black text-white font-heading tracking-wide text-glow-purple">
+          LUDO ARENA
+        </h2>
+        <p class="text-xs text-purple-300/80 mt-0.5">
+          বাংলাদেশ প্রিমিয়ার লুডো টুর্নামেন্ট নেটওয়ার্ক
+        </p>
+      </div>
+
+      <!-- Mode Switcher -->
+      <div class="grid grid-cols-2 bg-[#0c051a] p-1 rounded-2xl border border-purple-900/80 mb-3 text-xs font-heading">
+        <button
+          type="button"
+          onclick="setAuthMode('signup')"
+          id="btnAuthTabSignup"
+          class="py-2.5 rounded-xl font-bold transition-all bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg"
+        >
+          সাইন আপ (নতুন একাউন্ট)
+        </button>
+        <button
+          type="button"
+          onclick="setAuthMode('signin')"
+          id="btnAuthTabSignin"
+          class="py-2.5 rounded-xl font-bold transition-all text-purple-300/70 hover:text-white"
+        >
+          সাইন ইন (লগইন)
+        </button>
+      </div>
+
+      <!-- Referral Bonus Incentive Notice -->
+      <div id="authBonusBanner" class="bg-gradient-to-r from-amber-500/20 via-purple-600/25 to-amber-500/20 border border-amber-400/50 rounded-2xl p-3 mb-3 flex items-center gap-3 shadow-inner">
+        <div class="w-9 h-9 rounded-xl bg-amber-500/25 border border-amber-400 flex items-center justify-center text-amber-300 shrink-0 text-xl">
+          🎁
+        </div>
+        <div>
+          <span class="text-xs font-black text-amber-300 font-heading block">
+            রেফার কোড ব্যবহারে ১০ ৳ ইনস্ট্যান্ট বোনাস!
+          </span>
+          <span class="text-[10px] text-slate-300 block">
+            রেফার কোড দিলে আপনি পাবেন ১০ ৳ এবং বন্ধু পাবে ১৫ ৳ ক্যাশ রিওয়ার্ড।
+          </span>
+        </div>
+      </div>
+
+      <!-- 1 Phone = 1 Account Security Badge -->
+      <div id="authDeviceBadge" class="bg-[#0f0724] border border-purple-500/30 rounded-xl px-3 py-2 mb-3.5 flex items-center justify-between text-[11px] text-purple-300">
+        <span class="flex items-center gap-1.5 font-medium">
+          <span class="text-emerald-400 font-bold">🔒</span>
+          <span>১টি ফোনে ১টি মাত্র একাউন্ট প্রযোজ্য</span>
+        </span>
+        <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30">
+          সুরক্ষিত
+        </span>
+      </div>
+
+      <!-- Auth Form -->
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-3 text-left">
+        <div id="fieldNickname">
+          <label class="text-xs font-bold text-purple-300 block mb-1 font-heading uppercase">
+            Player Nickname (খেলোয়াড়ের নাম)
+          </label>
+          <input
+            id="authName"
+            type="text"
+            placeholder="e.g. Tanvir_Master"
+            class="w-full bg-[#0d061e] border border-purple-900/80 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-purple-500 transition-colors"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-purple-300 block mb-1 font-heading uppercase">
+            Mobile Number (মোবাইল নম্বর - বিকাশ/নগদ)
+          </label>
+          <input
+            id="authPhone"
+            type="tel"
+            placeholder="017XXXXXXXX"
+            class="w-full bg-[#0d061e] border border-purple-900/80 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-purple-500 transition-colors"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-purple-300 block mb-1 font-heading uppercase">
+            Password / PIN (পাসওয়ার্ড বা পিন)
+          </label>
+          <input
+            id="authPassword"
+            type="password"
+            placeholder="কমপক্ষে ৪ সংখ্যা (e.g. 1234)"
+            class="w-full bg-[#0d061e] border border-purple-900/80 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white font-mono tracking-widest focus:outline-none focus:border-purple-500 transition-colors"
+            required
+          />
+        </div>
+
+        <div id="fieldReferralCode">
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-bold text-purple-300 font-heading uppercase flex items-center gap-1">
+              <span>Referral Code (রেফার কোড)</span>
+              <span class="text-[10px] text-slate-400 font-normal lowercase">(ঐচ্ছিক)</span>
+            </label>
+            <span id="autoAppliedBadge" class="hidden text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/40">
+              ✓ Auto Applied
+            </span>
+          </div>
+          <input
+            id="authReferralCode"
+            type="text"
+            placeholder="e.g. LA-78912"
+            class="w-full bg-[#0d061e] border border-purple-900/80 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-amber-300 font-mono font-bold tracking-wider focus:outline-none focus:border-amber-400 uppercase transition-colors"
+          />
+        </div>
+
+        <div id="authError" class="hidden p-2.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-300 text-xs"></div>
+
+        <button
+          type="submit"
+          id="authSubmitBtn"
+          class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-white font-extrabold text-xs sm:text-sm shadow-xl font-heading flex items-center justify-center gap-2 active:scale-95 transition-transform mt-2"
+        >
+          <span id="authSubmitBtnText">রেজিস্ট্রেশন করুন ও ১০ ৳ বোনাস নিন</span>
+          <span>→</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 3. MAIN USER INTERFACE (NO ADMIN BUTTONS) -->
+  <!-- ========================================== -->
+  <div id="appContainer" class="max-w-md mx-auto min-h-screen relative flex flex-col bg-[#0d0722] border-x border-purple-950/40">
+
+    <!-- TOP HEADER -->
+    <header class="sticky top-0 z-30 bg-[#160b2e]/95 backdrop-blur-md border-b border-purple-500/25 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-amber-400 p-0.5 shadow glow-purple">
+          <div class="w-full h-full bg-[#120728] rounded-[10px] flex items-center justify-center font-heading font-black text-amber-400 text-lg">
+            LA
+          </div>
+        </div>
+        <div>
+          <span class="font-heading font-black text-lg text-white tracking-wider text-glow-purple">LUDO ARENA</span>
+          <span class="text-[9px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.2 rounded border border-emerald-500/40 ml-1">LIVE</span>
+        </div>
+      </div>
+
+      <!-- BALANCE PILL & RECHARGE BUTTON -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center bg-[#1b0d38] border border-purple-500/40 rounded-xl px-2.5 py-1.5 shadow-inner">
+          <div class="mr-2">
+            <span class="text-[9px] text-purple-300/80 block leading-tight">ব্যালেন্স</span>
+            <span id="headerBalance" class="text-xs font-black text-emerald-400 font-heading">৳0</span>
+          </div>
+          <button onclick="openModal('depositModal')" class="p-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow active:scale-90 transition-transform" title="টাকা রিচার্জ">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW AREA -->
+    <main class="flex-1 p-4 space-y-4">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: HOME DASHBOARD -->
+      <!-- ========================================== -->
+      <section id="viewHome" class="space-y-4">
+        <!-- Hero Banner -->
+        <div class="relative rounded-3xl bg-gradient-to-r from-[#2a1354] via-[#1a0b38] to-[#14072b] border border-purple-500/40 p-5 shadow-2xl glow-purple overflow-hidden">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-bold mb-2 font-heading uppercase">
+            <span>বাংলাদেশ ১ বনাম ১ প্রিমিয়ার টুর্নামেন্ট</span>
+          </div>
+          <h2 class="text-2xl font-black text-white font-heading leading-tight mb-2">
+            PLAY REAL LUDO.<br/>
+            WIN REAL <span class="text-amber-400 text-glow-gold">BDT (৳)</span> CASH.
+          </h2>
+          <p class="text-xs text-slate-300 mb-4">
+            কোনো এআই বা ফেক বট নেই। ১০০% আসল প্লেয়ারদের সাথে খেলুন এবং বিকাশ/নগদে নগদ টাকা ক্যাশআউট করুন।
+          </p>
+          <div class="flex gap-2">
+            <button onclick="switchTab('tournaments')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-bold text-xs font-heading text-white shadow active:scale-95">
+              টুর্নামেন্ট সমূহ
+            </button>
+            <button onclick="openModal('depositModal')" class="px-3.5 py-2 rounded-xl bg-[#1c0d3d] border border-emerald-500/40 font-bold text-xs font-heading text-emerald-400 active:scale-95">
+              টাকা রিচার্জ (৳)
+            </button>
+          </div>
+        </div>
+
+        <!-- Schedule Notice Badge -->
+        <div class="bg-purple-950/60 border border-purple-500/40 rounded-2xl p-3 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-400 text-lg shrink-0">
+            ⏰
+          </div>
+          <div class="text-[11px] text-slate-300 leading-snug">
+            <strong class="text-amber-300 font-heading block text-xs">ম্যাচ সময়সূচি ও কাউন্টডাউন:</strong>
+            টুর্নামেন্টগুলো নির্ধারিত সময়ে অনুষ্ঠিত হয়। নির্ধারিত কাউন্টডাউন টাইমার শেষ হওয়ার মধ্যে অপর প্লেয়ার না আসলে আপনার সম্পূর্ণ এন্ট্রি ফি অটোমেটিক রিফান্ড পাবেন।
+          </div>
+        </div>
+
+        <!-- Live Tournaments List -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="font-heading font-bold text-base text-white">আজকের শিডিউল ম্যাচ</h3>
+            <button onclick="switchTab('tournaments')" class="text-xs font-bold text-purple-300 font-heading">সবগুলো দেখুন →</button>
+          </div>
+          <div id="homeTournamentList" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: TOURNAMENTS WITH TIMERS -->
+      <!-- ========================================== -->
+      <section id="viewTournaments" class="hidden space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="font-heading font-black text-lg text-white">সকল টুর্নামেন্ট ও শিডিউল</h3>
+          <span class="text-[10px] text-emerald-400 font-bold font-mono bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
+            নো বট • ১০০% রিয়েল ম্যাচ
+          </span>
+        </div>
+        <div id="allTournamentList" class="space-y-3"></div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: TOP 20 LEADERBOARD -->
+      <!-- ========================================== -->
+      <section id="viewLeaderboard" class="hidden space-y-4">
+        <!-- Leaderboard Header Card -->
+        <div class="rounded-3xl bg-gradient-to-r from-[#2c1257] via-[#1a0a38] to-[#120626] border-2 border-amber-400/50 p-5 shadow-2xl glow-amber text-center">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center mx-auto mb-2 text-2xl">
+            🏆
+          </div>
+          <h3 class="text-xl font-black text-white font-heading">
+            টপ ২০ টুর্নামেন্ট লিডারবোর্ড
+          </h3>
+          <p class="text-xs text-amber-200/90 mt-0.5">
+            শীর্ষ ২০ জন আসল টুর্নামেন্ট বিজয়ী খেলোয়াড়দের তালিকা
+          </p>
+        </div>
+
+        <!-- My Rank Strip -->
+        <div class="bg-[#180e35] border border-purple-500/40 rounded-2xl p-3.5 flex items-center justify-between shadow-xl">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-600 border border-purple-400 flex items-center justify-center font-heading font-bold text-white text-sm">
+              YOU
+            </div>
+            <div>
+              <span id="lbMyName" class="font-heading font-bold text-sm text-white block">Tanvir Hossain</span>
+              <span class="text-xs text-purple-300 font-mono">
+                আয়: <strong id="lbMyWinnings" class="text-emerald-400 font-bold">৳0 BDT</strong>
+              </span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 uppercase font-heading block">আপনার অবস্থান</span>
+            <span class="text-sm font-black text-amber-400 font-heading">#Top Contender</span>
+          </div>
+        </div>
+
+        <!-- Top 3 Podium Cards -->
+        <div class="grid grid-cols-3 gap-2 items-end pt-4" id="podiumTop3">
+          <!-- Rank 2 -->
+          <div class="bg-[#170c2f] border-2 border-slate-400/50 rounded-2xl p-2.5 text-center shadow">
+            <span class="text-base block mb-1">🥈</span>
+            <span class="font-heading font-bold text-xs text-white block truncate" id="top2Name">Rakib_Pro</span>
+            <span class="font-heading font-black text-amber-400 text-xs mt-0.5 block" id="top2Winnings">৳3,850</span>
+            <span class="text-[9px] text-slate-400 block font-mono" id="top2Wins">16 জয় (72%)</span>
+          </div>
+
+          <!-- Rank 1 (Gold) -->
+          <div class="bg-[#240e48] border-2 border-amber-400 rounded-3xl p-3 text-center shadow-xl -mt-4 glow-amber">
+            <span class="text-2xl block mb-1">👑 🏆</span>
+            <span class="font-heading font-black text-sm text-white block truncate" id="top1Name">Hasan_King</span>
+            <span class="text-[8px] text-amber-300 font-bold bg-amber-500/20 px-1.5 py-0.2 rounded border border-amber-400/30 inline-block">CHAMPION</span>
+            <span class="font-heading font-black text-amber-300 text-sm mt-1 block" id="top1Winnings">৳5,400</span>
+            <span class="text-[9px] text-slate-300 block font-mono" id="top1Wins">22 জয় (78%)</span>
+          </div>
+
+          <!-- Rank 3 -->
+          <div class="bg-[#170c2f] border-2 border-amber-700/50 rounded-2xl p-2.5 text-center shadow">
+            <span class="text-base block mb-1">🥉</span>
+            <span class="font-heading font-bold text-xs text-white block truncate" id="top3Name">Tanvir_Arena</span>
+            <span class="font-heading font-black text-amber-400 text-xs mt-0.5 block" id="top3Winnings">৳2,450</span>
+            <span class="text-[9px] text-slate-400 block font-mono" id="top3Wins">11 জয় (67%)</span>
+          </div>
+        </div>
+
+        <!-- Remaining Top 20 Ranks (4 - 20) -->
+        <div class="bg-[#180e35] border border-purple-500/25 rounded-2xl p-3.5 shadow-xl space-y-2 text-xs">
+          <div class="flex justify-between items-center mb-2 pb-1 border-b border-purple-900/40">
+            <h4 class="font-bold text-white font-heading">শীর্ষ ২০ সেরা খেলোয়াড় (Rank 4 - 20)</h4>
+            <span class="text-[10px] text-amber-400 font-mono">২০ জন ভেরিফাইড প্লেয়ার</span>
+          </div>
+          <div id="leaderboardList20" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 4: ARENA & MATCHMAKING LOBBY -->
+      <!-- ========================================== -->
+      <section id="viewArena" class="hidden space-y-4">
+        
+        <!-- 4A. WAITING LOBBY (Countdown with Auto-Refund) -->
+        <div id="arenaWaitingLobby" class="bg-[#180e33] border-2 border-purple-500/40 rounded-3xl p-5 shadow-2xl text-center relative overflow-hidden">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold mb-3 font-heading">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+            <span>প্রতিপক্ষ খোঁজা হচ্ছে (WAITING FOR REAL PLAYER)</span>
+          </div>
+
+          <h3 id="waitingTrnTitle" class="text-lg font-black text-white font-heading">Dhaka Grand Masters 1v1</h3>
+          <p class="text-xs text-slate-300 mt-1 mb-2">
+            রুম কোড: <span id="waitingRoomCode" class="text-purple-300 font-mono font-bold">ARENA-7721</span> | প্রাইজ পুল: <strong id="waitingPrizePool" class="text-amber-400 font-heading">৳90 BDT</strong>
+          </p>
+          <div id="waitingScheduleBadge" class="inline-block px-3 py-0.5 rounded-full bg-purple-900/70 border border-purple-600/40 text-[11px] text-amber-300 font-mono mb-3">
+            📅 শিডিউল সময়: আজ দুপুর ০১:০০ টা
+          </div>
+
+          <!-- LIVE COUNTDOWN TIMER CIRCLE -->
+          <div class="relative w-36 h-36 mx-auto my-3 flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full border-4 border-purple-900/60"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-amber-400 border-t-transparent animate-spin" style="animation-duration: 3s"></div>
+            <div class="relative z-10 text-center">
+              <span id="waitingTimerDisplay" class="text-3xl font-black text-white font-heading block tracking-wider">
+                02:00
+              </span>
+              <span class="text-[9px] uppercase tracking-wider text-amber-300 font-bold block">
+                অটো রিফান্ড কাউন্টডাউন
+              </span>
+            </div>
+          </div>
+
+          <div class="bg-purple-950/70 border border-purple-500/30 rounded-2xl p-3 my-4 text-xs text-slate-300">
+            <p class="leading-relaxed">
+              ⏱️ এই টাইমার শেষ হওয়ার মধ্যে ২য় খেলোয়াড় যোগ না দিলে ম্যাচ বাতিল হবে এবং আপনার সম্পূর্ণ <strong id="waitingEntryRefundAmt" class="text-emerald-400 font-bold">৳৫০ এন্ট্রি ফি (১x)</strong> সাথে সাথে একাউন্টে ফেরত পাবেন।
+            </p>
+          </div>
+
+          <div class="flex gap-2">
+            <button onclick="simulateOpponentJoin()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 font-bold text-xs font-heading text-white shadow active:scale-95">
+              প্লেয়ার টেস্ট কানেক্ট (Real Match)
+            </button>
+            <button onclick="triggerWaitingAutoRefund()" class="py-2.5 px-4 rounded-xl bg-red-950/70 border border-red-500/50 font-bold text-xs font-heading text-red-300 active:scale-95">
+              বাতিল ও রিফান্ড
+            </button>
+          </div>
+        </div>
+
+        <!-- 4B. AUTO-REFUND BANNER -->
+        <div id="arenaRefundBanner" class="hidden bg-emerald-950/90 border-2 border-emerald-500 rounded-3xl p-5 shadow-2xl text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400 flex items-center justify-center mx-auto text-3xl">
+            💰
+          </div>
+          <h3 class="text-xl font-black text-white font-heading">
+            এন্ট্রি ফি ১০০% অটোমেটিক রিফান্ড হয়েছে!
+          </h3>
+          <p class="text-xs text-emerald-200">
+            টাইমার শেষ হওয়ার মধ্যে অপর প্রতিপক্ষ যোগ না দেওয়ায় ম্যাচটি বাতিল হয়েছে এবং আপনার এন্ট্রি ফি <strong id="refundDoneAmount" class="text-amber-300 font-bold">৳৫০</strong> ব্যালেন্সে যুক্ত হয়েছে।
+          </p>
+          <button onclick="switchTab('tournaments')" class="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs font-heading shadow active:scale-95">
+            অন্য শিডিউল ম্যাচে যোগ দিন
+          </button>
+        </div>
+
+        <!-- 4C. REAL PLAYABLE LUDO BOARD -->
+        <div id="arenaGameBoard" class="hidden bg-[#180e33] border border-purple-500/30 rounded-2xl p-3 shadow-2xl">
+          <div class="flex justify-between items-center mb-3">
+            <div>
+              <span id="arenaTitle" class="font-heading font-black text-sm text-white block">Dhaka Grand Masters 1v1</span>
+              <span id="arenaRoom" class="text-[10px] text-purple-300 font-mono">ROOM: ARENA-7721</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="confirmSurrenderMatch()" class="px-2.5 py-1 bg-red-950 hover:bg-red-900 border border-red-500/50 text-red-300 rounded-lg text-[10px] font-bold">
+                ম্যাচ লিভ (Surrender)
+              </button>
+              <div class="text-right">
+                <span class="text-[9px] text-slate-400 block">চ্যাম্পিয়ন প্রাইজ</span>
+                <span id="arenaPrize" class="font-heading font-black text-amber-400 text-sm">৳90 BDT</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ludo Board Graphics -->
+          <div class="w-full aspect-square rounded-xl bg-[#0e071f] border border-purple-900/60 p-2 relative flex items-center justify-center">
+            <svg class="w-full h-full" viewBox="0 0 300 300">
+              <rect x="0" y="0" width="120" height="120" fill="#dc2626" rx="8" />
+              <rect x="20" y="20" width="80" height="80" fill="#450a0a" rx="8" />
+              <circle cx="40" cy="40" r="10" fill="#ef4444" id="rToken0" />
+              <circle cx="80" cy="40" r="10" fill="#ef4444" id="rToken1" />
+              <circle cx="40" cy="80" r="10" fill="#ef4444" id="rToken2" />
+              <circle cx="80" cy="80" r="10" fill="#ef4444" id="rToken3" />
+
+              <rect x="180" y="0" width="120" height="120" fill="#059669" rx="8" />
+              <rect x="200" y="20" width="80" height="80" fill="#064e3b" rx="8" />
+              <circle cx="220" cy="40" r="10" fill="#10b981" id="gToken0" />
+              <circle cx="260" cy="40" r="10" fill="#10b981" id="gToken1" />
+              <circle cx="220" cy="80" r="10" fill="#10b981" id="gToken2" />
+              <circle cx="260" cy="80" r="10" fill="#10b981" id="gToken3" />
+
+              <rect x="0" y="180" width="120" height="120" fill="#0284c7" rx="8" />
+              <rect x="20" y="200" width="80" height="80" fill="#082f49" rx="8" />
+              <circle cx="40" cy="220" r="10" fill="#06b6d4" />
+              <circle cx="80" cy="220" r="10" fill="#06b6d4" />
+              <circle cx="40" cy="260" r="10" fill="#06b6d4" />
+              <circle cx="80" cy="260" r="10" fill="#06b6d4" />
+
+              <rect x="180" y="180" width="120" height="120" fill="#d97706" rx="8" />
+              <rect x="200" y="200" width="80" height="80" fill="#451a03" rx="8" />
+              <circle cx="220" cy="220" r="10" fill="#f59e0b" />
+              <circle cx="260" cy="220" r="10" fill="#f59e0b" />
+              <circle cx="220" cy="260" r="10" fill="#f59e0b" />
+              <circle cx="260" cy="260" r="10" fill="#f59e0b" />
+
+              <polygon points="120,120 180,120 150,150" fill="#10b981" />
+              <polygon points="180,120 180,180 150,150" fill="#f59e0b" />
+              <polygon points="120,180 180,180 150,150" fill="#06b6d4" />
+              <polygon points="120,120 120,180 150,150" fill="#ef4444" />
+
+              <rect x="20" y="130" width="100" height="20" fill="#ef4444" opacity="0.8" />
+              <rect x="140" y="20" width="20" height="100" fill="#10b981" opacity="0.8" />
+            </svg>
+          </div>
+
+          <!-- Turn & Dice Controller -->
+          <div class="mt-3 flex items-center justify-between bg-[#120828] p-3 rounded-xl border border-purple-900/50">
+            <div>
+              <span id="turnLabel" class="text-xs font-bold text-white block">আপনার চাল (লাল গুটি - Player 1)</span>
+              <span id="matchLog" class="text-[10px] text-amber-300 font-mono">গুটি খুলতে ছক্কা (৬) রোল করুন!</span>
+            </div>
+            <button id="diceBtn" onclick="rollGameDice()" class="w-14 h-14 rounded-xl bg-gradient-to-br from-white to-slate-200 border-2 border-purple-300 text-purple-950 font-black text-2xl flex items-center justify-center shadow-xl active:scale-90 transition-transform">
+              6
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 5: REFER & EARN (১০ ৳ ও ১৫ ৳ বোনাস) -->
+      <!-- ========================================== -->
+      <section id="viewRefer" class="hidden space-y-4">
+        <div class="rounded-3xl bg-gradient-to-br from-[#2d1254] via-[#1b0a38] to-[#120626] border-2 border-amber-400/50 p-5 shadow-2xl glow-amber text-center">
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/25 border border-amber-400 flex items-center justify-center mx-auto mb-3 text-2xl">
+            🤝
+          </div>
+          <h3 class="text-xl font-black text-white font-heading">
+            রেফার করুন ও নগদ টাকা আয় করুন!
+          </h3>
+          <p class="text-xs text-amber-200/90 mt-1 mb-4">
+            প্রতিটি সফল রেফারে আপনি পাবেন <strong class="text-amber-400 font-bold">১৫ ৳</strong> এবং আপনার বন্ধু পাবে <strong class="text-emerald-400 font-bold">১০ ৳</strong> বোনাস।
+          </p>
+
+          <div class="bg-[#0e061f] border-2 border-dashed border-amber-400/60 rounded-2xl p-3 flex items-center justify-between gap-2 mb-3">
+            <div class="text-left">
+              <span class="text-[9px] text-slate-400 block font-heading uppercase">আপনার রেফারেল কোড</span>
+              <span id="displayRefCode" class="font-mono font-black text-amber-300 text-lg tracking-wider">LA-78912</span>
+            </div>
+            <button onclick="copyReferralCode()" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs font-heading shadow active:scale-95">
+              কপি কোড
+            </button>
+          </div>
+
+          <button onclick="shareReferralLink()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs font-heading shadow flex items-center justify-center gap-1.5 active:scale-95">
+            <span>লিংক কপি ও বন্ধুদের সাথে শেয়ার করুন</span>
+            <span>🔗</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-[#180e33] border border-purple-500/30 rounded-2xl p-4 text-center">
+            <span class="text-[10px] text-slate-400 uppercase font-heading block">মোট আমন্ত্রিত বন্ধু</span>
+            <span id="refCountDisplay" class="text-2xl font-black text-white font-heading mt-1">0 জন</span>
+          </div>
+          <div class="bg-[#180e33] border border-purple-500/30 rounded-2xl p-4 text-center">
+            <span class="text-[10px] text-slate-400 uppercase font-heading block">রেফারেল থেকে আয়</span>
+            <span id="refEarningsDisplay" class="text-2xl font-black text-emerald-400 font-heading mt-1">৳0 BDT</span>
+          </div>
+        </div>
+
+        <div class="bg-[#180e33] border border-purple-500/20 rounded-2xl p-4 space-y-2 text-xs text-slate-300">
+          <h4 class="font-bold text-white font-heading text-sm">রেফারেল নিয়মাবলী:</h4>
+          <p>১. আপনার রেফার কোড বা লিংক বন্ধুদের ফেসবুক, হোয়াটসঅ্যাপ বা মেসেঞ্জারে দিন।</p>
+          <p>২. বন্ধু একাউন্ট খোলার সময় আপনার রেফার কোড ব্যবহার করলে তাৎক্ষণিক <strong class="text-emerald-400">১০ ৳</strong> বোনাস পাবে।</p>
+          <p>৩. আপনার একাউন্টে সাথে সাথে <strong class="text-amber-400">১৫ ৳</strong> রেফারেল বোনাস যোগ হবে।</p>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 6: PROFILE, SUPPORT & APP DOWNLOAD -->
+      <!-- ========================================== -->
+      <section id="viewProfile" class="hidden space-y-4">
+        <!-- User Info Card -->
+        <div class="rounded-3xl bg-gradient-to-br from-[#241348] via-[#1a0c35] to-[#120826] border-2 border-purple-500/40 p-5 shadow-2xl glow-purple">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-14 h-14 rounded-2xl bg-purple-600 border-2 border-purple-400 flex items-center justify-center font-heading font-black text-white text-xl">
+              LA
+            </div>
+            <div>
+              <h3 id="profUserName" class="text-lg font-bold text-white font-heading">Tanvir Hossain</h3>
+              <span id="profUserPhone" class="text-xs text-purple-300 font-mono">01712-345678</span>
+              <span class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold ml-1.5 uppercase">VERIFIED</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center text-xs pt-2 border-t border-purple-900/50">
+            <div class="bg-[#0f0722] p-2.5 rounded-xl border border-purple-900/40">
+              <span class="text-slate-400 text-[10px] block">মোট টুর্নামেন্ট আয়</span>
+              <strong id="profTotalWinnings" class="text-amber-400 font-heading text-sm font-bold">৳0 BDT</strong>
+            </div>
+            <div class="bg-[#0f0722] p-2.5 rounded-xl border border-purple-900/40">
+              <span class="text-slate-400 text-[10px] block">ডিভাইস পলিসি</span>
+              <strong class="text-emerald-400 font-heading text-sm font-bold">১ ফোনে ১ একাউন্ট</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Official Android APK Download -->
+        <div class="rounded-3xl bg-gradient-to-r from-[#1f0e42] via-[#170b33] to-[#120626] border-2 border-emerald-500/40 p-5 shadow-2xl glow-emerald">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-400 text-2xl shrink-0">
+              📱
+            </div>
+            <div>
+              <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full uppercase">Official Release</span>
+              <h4 class="text-base font-black text-white font-heading mt-0.5">অফিসিয়াল অ্যান্ড্রয়েড অ্যাপ (APK)</h4>
+              <p class="text-[11px] text-slate-300">ল্যাগহীন দ্রুত গতির গেমপ্লের জন্য অফিসিয়াল অ্যাপটি ডাউনলোড করুন।</p>
+            </div>
+          </div>
+          <button onclick="downloadOfficialApk()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 text-white font-black text-xs font-heading shadow flex items-center justify-center gap-1.5 active:scale-95">
+            <span>ডাউনলোড Android APK (v1.0.4)</span>
+            <span>⬇️</span>
+          </button>
+        </div>
+
+        <!-- 24/7 Helpline & Support Desk -->
+        <div class="bg-[#180e35] border border-purple-500/30 rounded-2xl p-4 space-y-3 text-xs">
+          <h4 class="font-bold text-white font-heading text-sm flex items-center gap-1.5">
+            <span>🎧 ২৪/৭ কাস্টমার সাপোর্ট হেল্পলাইন</span>
+          </h4>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="https://wa.me/8801822119933" target="_blank" class="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 flex items-center justify-center gap-1.5 font-bold text-emerald-300 hover:bg-emerald-900/60">
+              <span>WhatsApp চ্যাট</span>
+              <span>💬</span>
+            </a>
+            <a href="https://t.me/ludoarenabd" target="_blank" class="p-2.5 rounded-xl bg-sky-950/60 border border-sky-500/40 flex items-center justify-center gap-1.5 font-bold text-sky-300 hover:bg-sky-900/60">
+              <span>Telegram চ্যানেল</span>
+              <span>✈️</span>
+            </a>
+          </div>
+          <button onclick="openModal('ticketModal')" class="w-full py-2 bg-purple-900/70 hover:bg-purple-800 border border-purple-600/50 rounded-xl text-purple-200 font-bold">
+            + নতুন সাপোর্ট টিকেট খুলুন
+          </button>
+        </div>
+
+        <!-- Tournament Rules Accordion -->
+        <div class="bg-[#180e35] border border-purple-500/30 rounded-2xl p-4 space-y-2 text-xs text-slate-300">
+          <h4 class="font-bold text-white font-heading text-sm">📖 টুর্নামেন্ট নিয়মাবলী ও ফেয়ার প্লে:</h4>
+          <ul class="list-disc list-inside space-y-1 pl-1 leading-relaxed text-slate-300">
+            <li><strong>১ বনাম ১ নিয়ম:</strong> ম্যাচ শুরুর আগে দুই আসল প্লেয়ার সংযুক্ত থাকবে এবং নির্দিষ্ট সময়ে ডাইস চাল শুরু হবে।</li>
+            <li><strong>টাইমার ও রিফান্ড:</strong> কাউন্টডাউন টাইমারের মধ্যে অপর প্লেয়ার না আসলে এন্ট্রি ফি সম্পূর্ণ ফেরত পাবেন।</li>
+            <li><strong>ম্যাচ চলাকালীন লিভ নিলে:</strong> কোনো টাকা ফেরত দেওয়া হবে না (৳0 রিফান্ড) এবং প্রতিপক্ষ সরাসরি চ্যাম্পিয়ন হবে।</li>
+            <li><strong>না খেললে বা AFK হলে:</strong> পর পর ২ বার টাইমআউট হলে খেলোয়াড় ডিসকোয়ালিফাই হবে এবং প্রতিপক্ষ বিজয়ী হবে।</li>
+          </ul>
+        </div>
+
+        <button onclick="handleUserLogout()" class="w-full py-2.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 font-bold text-xs font-heading">
+          লগআউট করুন
+        </button>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 7: WALLET & TRANSACTIONS -->
+      <!-- ========================================== -->
+      <section id="viewWallet" class="hidden space-y-4">
+        <div class="rounded-3xl bg-gradient-to-br from-[#241348] to-[#120826] border border-purple-500/40 p-5 shadow-2xl glow-purple">
+          <span class="text-xs text-purple-300 uppercase tracking-widest font-heading font-bold">BDT গেমিং ওয়ালেট</span>
+          <div class="text-3xl font-black text-white font-heading mt-1" id="walletBalanceBig">৳0 BDT</div>
+          <div class="flex gap-2 mt-4">
+            <button onclick="openModal('depositModal')" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs font-heading shadow active:scale-95">
+              টাকা যোগ (বিকাশ/নগদ)
+            </button>
+            <button onclick="openModal('withdrawModal')" class="flex-1 py-2.5 rounded-xl bg-[#1a0e38] border border-purple-500/40 text-slate-200 font-bold text-xs font-heading active:scale-95">
+              টাকা উত্তোলন (Cashout)
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-[#180e33] border border-purple-500/25 rounded-2xl p-4 shadow-xl">
+          <h4 class="font-heading font-bold text-sm text-white mb-3">লেনদেনের ইতিহাস (Transactions)</h4>
+          <div id="transactionList" class="space-y-2 text-xs"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION (6 TABS: Home, Schedule, Arena, Top 20, Refer, Profile) -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-30 bg-[#120726]/95 backdrop-blur-lg border-t border-purple-500/25 px-2 py-2">
+      <div class="grid grid-cols-6 gap-1 text-center">
+        <button onclick="switchTab('home')" id="tabBtn-home" class="text-purple-400 font-bold text-[10px] font-heading">হোম</button>
+        <button onclick="switchTab('tournaments')" id="tabBtn-tournaments" class="text-slate-400 text-[10px] font-heading">শিডিউল</button>
+        <button onclick="switchTab('arena')" id="tabBtn-arena" class="text-slate-400 text-[10px] font-heading">অ্যারেনা</button>
+        <button onclick="switchTab('leaderboard')" id="tabBtn-leaderboard" class="text-amber-400 font-bold text-[10px] font-heading">টপ ২০ 🏆</button>
+        <button onclick="switchTab('refer')" id="tabBtn-refer" class="text-slate-400 text-[10px] font-heading">রেফার ৳</button>
+        <button onclick="switchTab('profile')" id="tabBtn-profile" class="text-slate-400 text-[10px] font-heading">প্রোফাইল</button>
+      </div>
+    </nav>
+
+    <!-- DEPOSIT MODAL -->
+    <div id="depositModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+      <div class="bg-[#180e35] border border-purple-500/50 rounded-2xl p-5 max-w-sm w-full text-xs">
+        <div class="flex justify-between items-center mb-3">
+          <span class="font-heading font-black text-sm text-white">টাকা রিচার্জ (bKash / Nagad)</span>
+          <button onclick="closeModal('depositModal')" class="text-slate-400 font-bold text-base">✕</button>
+        </div>
+        <form onsubmit="handleDepositSubmit(event)" class="space-y-3">
+          <div>
+            <label class="text-purple-300 block mb-1">পেমেন্ট মেথড</label>
+            <select id="depMethod" class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white">
+              <option value="bkash">বিকাশ (Send Money: 01822-119933)</option>
+              <option value="nagad">নগদ (Send Money: 01712-345678)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-purple-300 block mb-1">পরিমাণ (BDT ৳)</label>
+            <input id="depAmount" type="number" min="10" value="100" class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white font-bold" required />
+          </div>
+          <div>
+            <label class="text-purple-300 block mb-1">আপনার প্রেরক মোবাইল নম্বর</label>
+            <input id="depPhone" type="tel" value="017XXXXXXXX" class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white font-mono" required />
+          </div>
+          <div>
+            <label class="text-purple-300 block mb-1">TrxID (ট্রানজেকশন আইডি)</label>
+            <input id="depTrxId" type="text" placeholder="e.g. BKA889922" class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white font-mono uppercase" required />
+          </div>
+          <p class="text-[10px] text-slate-400">
+            নোট: রিকোয়েস্টটি অ্যাডমিন প্যানেলে যাবে। অ্যাডমিন যাচাই করে অনুমোদন দিলে ব্যালেন্সে টাকা যোগ হবে।
+          </p>
+          <button type="submit" class="w-full py-2.5 bg-emerald-600 rounded-xl text-white font-bold font-heading shadow active:scale-95">
+            ডিপোজিট রিকোয়েস্ট পাঠান
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- WITHDRAW MODAL -->
+    <div id="withdrawModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+      <div class="bg-[#180e35] border border-purple-500/50 rounded-2xl p-5 max-w-sm w-full text-xs">
+        <div class="flex justify-between items-center mb-3">
+          <span class="font-heading font-black text-sm text-white">টাকা উত্তোলন (Cashout)</span>
+          <button onclick="closeModal('withdrawModal')" class="text-slate-400 font-bold text-base">✕</button>
+        </div>
+        <form onsubmit="handleWithdrawSubmit(event)" class="space-y-3">
+          <div>
+            <label class="text-purple-300 block mb-1">মেথড</label>
+            <select id="wdMethod" class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white">
+              <option value="bkash">বিকাশ পার্সোনাল</option>
+              <option value="nagad">নগদ পার্সোনাল</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-purple-300 block mb-1">পরিমাণ (BDT ৳)</label>
+            <input id="wdAmount" type="number" min="50" value="50" class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white font-bold" required />
+          </div>
+          <div>
+            <label class="text-purple-300 block mb-1">প্রাপক মোবাইল নম্বর</label>
+            <input id="wdPhone" type="tel" value="017XXXXXXXX" class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white font-mono" required />
+          </div>
+          <p class="text-[10px] text-slate-400">
+            নোট: ব্যালেন্স থেকে সাথে সাথে কাটা হবে। অ্যাডমিন রিজেক্ট করলে সম্পূর্ণ টাকা অটো রিফান্ড হবে।
+          </p>
+          <button type="submit" class="w-full py-2.5 bg-amber-600 rounded-xl text-white font-bold font-heading shadow active:scale-95">
+            উইথড্র রিকোয়েস্ট সাবমিট করুন
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SUPPORT TICKET MODAL -->
+    <div id="ticketModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+      <div class="bg-[#180e35] border border-purple-500/50 rounded-2xl p-5 max-w-sm w-full text-xs">
+        <div class="flex justify-between items-center mb-3">
+          <span class="font-heading font-black text-sm text-white">সাপোর্ট টিকিট পাঠান</span>
+          <button onclick="closeModal('ticketModal')" class="text-slate-400 font-bold text-base">✕</button>
+        </div>
+        <form onsubmit="handleTicketSubmit(event)" class="space-y-3">
+          <div>
+            <label class="text-purple-300 block mb-1">বিষয় (Subject)</label>
+            <input id="tktSubject" type="text" placeholder="e.g. বিকাশ রিচার্জ অনুসন্ধান" class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white" required />
+          </div>
+          <div>
+            <label class="text-purple-300 block mb-1">বিস্তারিত বিবরণ</label>
+            <textarea id="tktMessage" rows="3" placeholder="আপনার সমস্যা বা প্রশ্নের বিবরণ দিন..." class="w-full bg-[#0f0722] border border-purple-900 rounded-lg p-2 text-white" required></textarea>
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-purple-600 rounded-xl text-white font-bold font-heading shadow active:scale-95">
+            টিকিট পাঠান
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 4. FIREBASE SDK INITIALIZATION -->
+  <!-- ========================================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCkLFv1eIp8YVj-mozqRZwnU9UpVjQRYkc",
+      authDomain: "ludo-arina.firebaseapp.com",
+      databaseURL: "https://ludo-arina-default-rtdb.firebaseio.com",
+      projectId: "ludo-arina",
+      storageBucket: "ludo-arina.firebasestorage.app",
+      messagingSenderId: "462267400907",
+      appId: "1:462267400907:web:389a23b125d3f2cf56514e",
+      measurementId: "G-M2V17W1P29"
+    };
+
+    try {
+      window.firebaseApp = initializeApp(firebaseConfig);
+      console.log('User: Firebase Initialized successfully.');
+    } catch(e) {
+      console.warn('User Firebase init note:', e);
+    }
+  </script>
+
+  <!-- ========================================== -->
+  <!-- 5. REAL-TIME ENGINE & JAVASCRIPT LOGIC -->
+  <!-- ========================================== -->
+  <script>
+    // Unified Storage Keys for Complete Data Sync with Admin
+    const KEYS = {
+      USER: 'ludo_arena_user_v3',
+      ALL_USERS: 'ludo_arena_all_users_v3',
+      TOURNAMENTS: 'ludo_arena_tournaments_v3',
+      TRANSACTIONS: 'ludo_arena_transactions_v3',
+      DEPOSITS: 'ludo_arena_deposits_v3',
+      WITHDRAWALS: 'ludo_arena_withdrawals_v3',
+      TICKETS: 'ludo_arena_tickets_v3',
+      SETTINGS: 'ludo_arena_settings_v3',
+      REGISTERED: 'ludo_arena_is_registered_v3',
+      AUTO_REF: 'ludo_auto_ref_code',
+      DEVICE_PHONE: 'ludo_device_account_phone'
+    };
+
+    // BROADCAST CHANNEL FOR INSTANT DATA SYNC
+    let syncChannel;
+    try {
+      syncChannel = new BroadcastChannel('ludo_arena_realtime_sync');
+      syncChannel.onmessage = (event) => {
+        if (event.data && event.data.type === 'DATA_UPDATED') {
+          renderUI();
+        }
+      };
+    } catch(e) {
+      console.warn('BroadcastChannel fallback');
+    }
+
+    function notifySync() {
+      if (syncChannel) {
+        syncChannel.postMessage({ type: 'DATA_UPDATED', timestamp: Date.now() });
+      }
+    }
+
+    let activeAuthMode = 'signup';
+    let currentWaitingTrn = null;
+    let waitingInterval = null;
+    let waitingSecondsRemaining = 120;
+
+    const soundCtx = {
+      play(freq, type, duration) {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = type || 'sine';
+          osc.frequency.setValueAtTime(freq || 440, ctx.currentTime);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + duration);
+        } catch(e) {}
+      },
+      coin() { this.play(880, 'sine', 0.15); setTimeout(() => this.play(1320, 'sine', 0.25), 80); },
+      roll() { this.play(260, 'triangle', 0.1); },
+      refund() { this.play(520, 'sine', 0.2); setTimeout(() => this.play(659, 'sine', 0.3), 100); }
+    };
+
+    function getUser() {
+      const u = localStorage.getItem(KEYS.USER);
+      if (u) return JSON.parse(u);
+      return {
+        id: 'usr_' + Date.now().toString().slice(-6),
+        name: 'Player',
+        phone: '01700000000',
+        walletBalance: 0,
+        totalWinnings: 0,
+        referralCode: 'LA-' + Math.floor(10000 + Math.random() * 90000),
+        referralCount: 0,
+        referralEarnings: 0
+      };
+    }
+
+    function saveUser(u) {
+      localStorage.setItem(KEYS.USER, JSON.stringify(u));
+      // Atomically sync into all users list
+      const all = JSON.parse(localStorage.getItem(KEYS.ALL_USERS) || '[]');
+      const idx = all.findIndex(x => x.id === u.id);
+      if (idx !== -1) {
+        all[idx] = { ...all[idx], ...u };
+      } else {
+        all.unshift(u);
+      }
+      localStorage.setItem(KEYS.ALL_USERS, JSON.stringify(all));
+      notifySync();
+    }
+
+    // AUTH MODE SWITCHER
+    function setAuthMode(mode) {
+      activeAuthMode = mode;
+      const btnSignup = document.getElementById('btnAuthTabSignup');
+      const btnSignin = document.getElementById('btnAuthTabSignin');
+      const fNick = document.getElementById('fieldNickname');
+      const fRef = document.getElementById('fieldReferralCode');
+      const bBanner = document.getElementById('authBonusBanner');
+      const bDevice = document.getElementById('authDeviceBadge');
+      const sBtnText = document.getElementById('authSubmitBtnText');
+      const errEl = document.getElementById('authError');
+      if (errEl) errEl.classList.add('hidden');
+
+      if (mode === 'signup') {
+        btnSignup.className = 'py-2.5 rounded-xl font-bold transition-all bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg';
+        btnSignin.className = 'py-2.5 rounded-xl font-bold transition-all text-purple-300/70 hover:text-white';
+        fNick.classList.remove('hidden');
+        fRef.classList.remove('hidden');
+        bBanner.classList.remove('hidden');
+        bDevice.classList.remove('hidden');
+        sBtnText.innerText = 'রেজিস্ট্রেশন করুন ও ১০ ৳ বোনাস নিন';
+      } else {
+        btnSignin.className = 'py-2.5 rounded-xl font-bold transition-all bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg';
+        btnSignup.className = 'py-2.5 rounded-xl font-bold transition-all text-purple-300/70 hover:text-white';
+        fNick.classList.add('hidden');
+        fRef.classList.add('hidden');
+        bBanner.classList.add('hidden');
+        bDevice.classList.add('hidden');
+        sBtnText.innerText = 'সাইন ইন করুন (লগইন)';
+      }
+      soundCtx.roll();
+    }
+
+    // HANDLE AUTH SUBMIT WITH 1 DEVICE = 1 ACCOUNT CHECK & 10 BDT BONUS
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const phone = document.getElementById('authPhone').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      const errEl = document.getElementById('authError');
+
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
+        errEl.innerText = 'অনুগ্রহ করে সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 01712345678)।';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (!password || password.length < 4) {
+        errEl.innerText = 'পাসওয়ার্ড কমপক্ষে ৪ সংখ্যার হতে হবে।';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (activeAuthMode === 'signup') {
+        const name = document.getElementById('authName').value.trim();
+        const refCode = document.getElementById('authReferralCode').value.trim().toUpperCase();
+
+        if (!name) {
+          errEl.innerText = 'অনুগ্রহ করে আপনার নাম লিখুন।';
+          errEl.classList.remove('hidden');
+          return;
+        }
+
+        // 1 ACCOUNT PER DEVICE CHECK
+        const boundPhone = localStorage.getItem(KEYS.DEVICE_PHONE);
+        if (boundPhone && boundPhone !== cleanPhone) {
+          errEl.innerHTML = `একটি ফোনে শুধুমাত্র ১টি একাউন্ট অনুমোদনযোগ্য! এই ডিভাইসে ইতিমধ্যে অ্যাকাউন্ট (${boundPhone}) নিবন্ধিত রয়েছে। <br><button type="button" onclick="setAuthMode('signin'); document.getElementById('authPhone').value='${boundPhone}';" class="underline text-amber-300 font-bold mt-1 inline-block">👉 সাইন ইন করুন</button>`;
+          errEl.classList.remove('hidden');
+          return;
+        }
+
+        // Referral rule: New user gets 10 BDT bonus, referrer gets 15 BDT bonus
+        const hasReferral = Boolean(refCode);
+        const startingBonus = hasReferral ? 10 : 0;
+        const myRefCode = 'LA-' + Math.floor(10000 + Math.random() * 90000);
+
+        const newUser = {
+          id: 'usr_' + Date.now().toString().slice(-6),
+          name: name,
+          phone: phone,
+          walletBalance: startingBonus,
+          totalWinnings: 0,
+          matchesPlayed: 0,
+          matchesWon: 0,
+          referralCode: myRefCode,
+          referralCount: 0,
+          referralEarnings: 0
+        };
+
+        saveUser(newUser);
+        localStorage.setItem(KEYS.REGISTERED, 'true');
+        localStorage.setItem(KEYS.DEVICE_PHONE, cleanPhone);
+
+        if (startingBonus > 0) {
+          const txs = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]');
+          txs.unshift({
+            id: 'TXN-REF-' + Date.now().toString().slice(-5),
+            userId: newUser.id,
+            userName: newUser.name,
+            type: 'winning',
+            amount: 10,
+            currency: 'BDT',
+            trxId: 'REF-JOIN-10',
+            status: 'completed',
+            description: '১০ ৳ রেফারেল সাইন-আপ বোনাস',
+            timestamp: new Date().toISOString()
+          });
+          localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(txs));
+
+          // Credit 15 BDT to referrer if exists
+          const all = JSON.parse(localStorage.getItem(KEYS.ALL_USERS) || '[]');
+          const refUser = all.find(x => x.referralCode === refCode);
+          if (refUser) {
+            refUser.walletBalance = (refUser.walletBalance || 0) + 15;
+            refUser.referralCount = (refUser.referralCount || 0) + 1;
+            refUser.referralEarnings = (refUser.referralEarnings || 0) + 15;
+            localStorage.setItem(KEYS.ALL_USERS, JSON.stringify(all));
+          }
+        }
+
+        soundCtx.coin();
+        confetti({ particleCount: 70, spread: 80 });
+        document.getElementById('authScreen').classList.add('hidden');
+        notifySync();
+        renderUI();
+      } else {
+        // Sign In
+        let all = JSON.parse(localStorage.getItem(KEYS.ALL_USERS) || '[]');
+        let user = all.find(x => x.phone.replace(/[^0-9]/g, '') === cleanPhone);
+        if (!user) {
+          user = {
+            id: 'usr_' + Date.now().toString().slice(-6),
+            name: 'Contender',
+            phone: phone,
+            walletBalance: 0,
+            totalWinnings: 0,
+            matchesPlayed: 0,
+            matchesWon: 0,
+            referralCode: 'LA-' + Math.floor(10000 + Math.random() * 90000),
+            referralCount: 0,
+            referralEarnings: 0
+          };
+          all.unshift(user);
+          localStorage.setItem(KEYS.ALL_USERS, JSON.stringify(all));
+        }
+
+        saveUser(user);
+        localStorage.setItem(KEYS.DEVICE_PHONE, cleanPhone);
+        localStorage.setItem(KEYS.REGISTERED, 'true');
+        soundCtx.coin();
+        document.getElementById('authScreen').classList.add('hidden');
+        notifySync();
+        renderUI();
+      }
+    }
+
+    function handleUserLogout() {
+      if (confirm('আপনি কি অ্যাকাউন্ট থেকে লগআউট করতে চান?')) {
+        localStorage.removeItem(KEYS.REGISTERED);
+        document.getElementById('authScreen').classList.remove('hidden');
+      }
+    }
+
+    // RENDER UI & SYNC ALL DATA
+    function renderUI() {
+      const u = getUser();
+      document.getElementById('headerBalance').innerText = '৳' + u.walletBalance;
+      document.getElementById('walletBalanceBig').innerText = '৳' + u.walletBalance + ' BDT';
+
+      const profName = document.getElementById('profUserName');
+      if (profName) profName.innerText = u.name;
+      const profPhone = document.getElementById('profUserPhone');
+      if (profPhone) profPhone.innerText = u.phone;
+      const profWin = document.getElementById('profTotalWinnings');
+      if (profWin) profWin.innerText = '৳' + (u.totalWinnings || 0) + ' BDT';
+
+      const lbName = document.getElementById('lbMyName');
+      if (lbName) lbName.innerText = u.name;
+      const lbWin = document.getElementById('lbMyWinnings');
+      if (lbWin) lbWin.innerText = '৳' + (u.totalWinnings || 0) + ' BDT';
+
+      const dispRef = document.getElementById('displayRefCode');
+      if (dispRef) dispRef.innerText = u.referralCode || 'LA-78912';
+      const refCount = document.getElementById('refCountDisplay');
+      if (refCount) refCount.innerText = (u.referralCount || 0) + ' জন';
+      const refEarn = document.getElementById('refEarningsDisplay');
+      if (refEarn) refEarn.innerText = '৳' + (u.referralEarnings || 0) + ' BDT';
+
+      // 1. TOURNAMENTS WITH TIMERS
+      let trns = JSON.parse(localStorage.getItem(KEYS.TOURNAMENTS) || '[]');
+      if (trns.length === 0) {
+        trns = [
+          {
+            id: 'trn_101',
+            title: 'Dhaka Grand Masters 1v1',
+            titleBn: 'ঢাকা গ্র্যান্ড মাস্টার্স ১ বনাম ১',
+            format: '1v1',
+            entryFee: 50,
+            prizePool: 90,
+            maxPlayers: 2,
+            matchTimeSlot: 'আজ দুপুর ০১:০০ টা',
+            waitingTimerSeconds: 120,
+            status: 'registration_open',
+            roomCode: 'ARENA-7721'
+          },
+          {
+            id: 'trn_102',
+            title: 'Chittagong High Stakes 1v1',
+            titleBn: 'চট্টগ্রাম হাই স্টেক ১ বনাম ১',
+            format: '1v1',
+            entryFee: 100,
+            prizePool: 180,
+            maxPlayers: 2,
+            matchTimeSlot: 'আজ বিকাল ০৪:০০ টা',
+            waitingTimerSeconds: 120,
+            status: 'registration_open',
+            roomCode: 'ARENA-4090'
+          },
+          {
+            id: 'trn_103',
+            title: 'Sylhet Evening Battle 1v1',
+            titleBn: 'সিলেট সান্ধ্যকালীন ১ বনাম ১',
+            format: '1v1',
+            entryFee: 200,
+            prizePool: 360,
+            maxPlayers: 2,
+            matchTimeSlot: 'আজ সন্ধ্যা ০৭:০০ টা',
+            waitingTimerSeconds: 120,
+            status: 'registration_open',
+            roomCode: 'ARENA-9901'
+          },
+          {
+            id: 'trn_104',
+            title: 'Night Champions Cup 1v1',
+            titleBn: 'নাইট চ্যাম্পিয়ন্স কাপ ১ বনাম ১',
+            format: '1v1',
+            entryFee: 500,
+            prizePool: 920,
+            maxPlayers: 2,
+            matchTimeSlot: 'আজ রাত ০৯:০০ টা',
+            waitingTimerSeconds: 180,
+            status: 'registration_open',
+            roomCode: 'ARENA-1204'
+          }
+        ];
+        localStorage.setItem(KEYS.TOURNAMENTS, JSON.stringify(trns));
+      }
+
+      const hList = document.getElementById('homeTournamentList');
+      const aList = document.getElementById('allTournamentList');
+      if (hList && aList) {
+        let hHtml = '', aHtml = '';
+        trns.slice(0, 3).forEach(t => {
+          hHtml += `<div class="bg-[#180e35] p-3.5 rounded-2xl border border-purple-900/50 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-white font-heading text-sm">${t.titleBn || t.title}</div>
+              <div class="text-[10px] text-amber-300 font-mono mt-0.5">
+                📅 সময়সূচি: <strong>${t.matchTimeSlot || 'আজ দুপুর ০১:০০ টা'}</strong>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                এন্ট্রি ফি: ৳${t.entryFee} | প্রাইজ: <strong class="text-amber-400 font-bold">৳${t.prizePool}</strong>
+              </div>
+            </div>
+            <button onclick="joinArena('${t.id}')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-bold text-white font-heading shadow active:scale-95">
+              জয়েন ৳${t.entryFee}
+            </button>
+          </div>`;
+        });
+
+        trns.forEach(t => {
+          aHtml += `<div class="bg-[#180e35] p-3.5 rounded-2xl border border-purple-900/50 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-white font-heading text-sm">${t.titleBn || t.title}</div>
+              <div class="text-[10px] text-amber-300 font-mono mt-0.5">
+                📅 সময়সূচি: <strong>${t.matchTimeSlot || 'আজ দুপুর ০১:০০ টা'}</strong>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                ফরম্যাট: 1v1 আসল প্লেয়ার | প্রাইজ: <strong class="text-amber-400 font-bold">৳${t.prizePool}</strong>
+              </div>
+            </div>
+            <button onclick="joinArena('${t.id}')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-bold text-white font-heading shadow active:scale-95">
+              প্লে ৳${t.entryFee}
+            </button>
+          </div>`;
+        });
+
+        hList.innerHTML = hHtml;
+        aList.innerHTML = aHtml;
+      }
+
+      // 2. TOP 20 LEADERBOARD POPULATION
+      renderTop20Leaderboard();
+
+      // 3. TRANSACTIONS
+      const txs = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]');
+      const txList = document.getElementById('transactionList');
+      if (txList) {
+        txList.innerHTML = txs.slice(0, 8).map(t => `
+          <div class="bg-[#100726] p-2.5 rounded-xl border border-purple-900/40 flex justify-between items-center">
+            <div>
+              <div class="font-bold text-white">${t.description}</div>
+              <span class="text-[10px] text-slate-400 font-mono">${t.trxId}</span>
+            </div>
+            <div class="text-right">
+              <span class="font-bold ${t.type==='deposit'||t.type==='winning'||t.type==='refund' ? 'text-emerald-400': 'text-slate-200'}">
+                ${t.type==='refund'||t.type==='winning'||t.type==='deposit' ? '+' : '-'}৳${t.amount}
+              </span>
+              <span class="text-[9px] block uppercase font-mono ${t.status==='completed'||t.status==='refunded'?'text-emerald-400':t.status==='pending'?'text-amber-400':'text-red-400'}">
+                ${t.status}
+              </span>
+            </div>
+          </div>
+        `).join('') || '<div class="text-slate-500 py-3 text-center">কোনো লেনদেনের রেকর্ড নেই</div>';
+      }
+    }
+
+    // TOP 20 LEADERBOARD BUILDER
+    function renderTop20Leaderboard() {
+      const allUsers = JSON.parse(localStorage.getItem(KEYS.ALL_USERS) || '[]');
+      const baseLadder = [
+        { rank: 1, name: 'Hasan_King_BD', totalWinnings: 5400, matchesWon: 22, winRate: 78, badge: '🏆 Champion' },
+        { rank: 2, name: 'Rakib_Pro_Gamer', totalWinnings: 3850, matchesWon: 16, winRate: 72, badge: '🥈 Master' },
+        { rank: 3, name: 'Tanvir_Arena', totalWinnings: 2450, matchesWon: 11, winRate: 67, badge: '🥉 Elite' },
+        { rank: 4, name: 'Shuvo_Sniper', totalWinnings: 1980, matchesWon: 9, winRate: 62, badge: 'Diamond' },
+        { rank: 5, name: 'Arafat_Ludo', totalWinnings: 1720, matchesWon: 8, winRate: 59, badge: 'Diamond' },
+        { rank: 6, name: 'Mehedi_Master', totalWinnings: 1540, matchesWon: 7, winRate: 58, badge: 'Diamond' },
+        { rank: 7, name: 'Nayeem_Strike', totalWinnings: 1390, matchesWon: 6, winRate: 55, badge: 'Diamond' },
+        { rank: 8, name: 'Sabbir_Sixer', totalWinnings: 1250, matchesWon: 6, winRate: 54, badge: 'Diamond' },
+        { rank: 9, name: 'Fahim_Challenger', totalWinnings: 1120, matchesWon: 5, winRate: 52, badge: 'Diamond' },
+        { rank: 10, name: 'Sakib_Arena_BD', totalWinnings: 990, matchesWon: 5, winRate: 50, badge: 'Diamond' },
+        { rank: 11, name: 'Rony_King', totalWinnings: 880, matchesWon: 4, winRate: 49, badge: 'Platinum' },
+        { rank: 12, name: 'Alamin_Pro', totalWinnings: 760, matchesWon: 4, winRate: 48, badge: 'Platinum' },
+        { rank: 13, name: 'Imran_Ludo_Boss', totalWinnings: 690, matchesWon: 3, winRate: 46, badge: 'Platinum' },
+        { rank: 14, name: 'Zubair_Roll', totalWinnings: 620, matchesWon: 3, winRate: 45, badge: 'Platinum' },
+        { rank: 15, name: 'Kamrul_Tactics', totalWinnings: 550, matchesWon: 3, winRate: 44, badge: 'Gold' },
+        { rank: 16, name: 'Mithun_Speed', totalWinnings: 480, matchesWon: 2, winRate: 42, badge: 'Gold' },
+        { rank: 17, name: 'Biplob_Gamer', totalWinnings: 410, matchesWon: 2, winRate: 40, badge: 'Gold' },
+        { rank: 18, name: 'Sujon_Bd_Player', totalWinnings: 350, matchesWon: 2, winRate: 38, badge: 'Gold' },
+        { rank: 19, name: 'Jahid_Dice_Ace', totalWinnings: 290, matchesWon: 1, winRate: 35, badge: 'Gold' },
+        { rank: 20, name: 'Anisur_Rising_Star', totalWinnings: 240, matchesWon: 1, winRate: 33, badge: 'Gold' }
+      ];
+
+      const map = new Map();
+      baseLadder.forEach(b => map.set(b.name, b));
+
+      allUsers.forEach(u => {
+        const wr = u.matchesPlayed > 0 ? Math.round((u.matchesWon / u.matchesPlayed) * 100) : 0;
+        map.set(u.name, {
+          rank: 0,
+          name: u.name,
+          totalWinnings: u.totalWinnings || 0,
+          matchesWon: u.matchesWon || 0,
+          winRate: wr,
+          badge: u.totalWinnings > 2000 ? '🏆 Champion' : u.totalWinnings > 1000 ? '🥈 Master' : 'Elite'
+        });
+      });
+
+      const top20 = Array.from(map.values())
+        .sort((a, b) => (b.totalWinnings - a.totalWinnings) || (b.matchesWon - a.matchesWon))
+        .slice(0, 20);
+
+      // Top 3 Podium
+      if (top20[0]) {
+        const elN = document.getElementById('top1Name'); if (elN) elN.innerText = top20[0].name;
+        const elW = document.getElementById('top1Winnings'); if (elW) elW.innerText = '৳' + top20[0].totalWinnings;
+        const elM = document.getElementById('top1Wins'); if (elM) elM.innerText = top20[0].matchesWon + ' জয় (' + top20[0].winRate + '%)';
+      }
+      if (top20[1]) {
+        const elN = document.getElementById('top2Name'); if (elN) elN.innerText = top20[1].name;
+        const elW = document.getElementById('top2Winnings'); if (elW) elW.innerText = '৳' + top20[1].totalWinnings;
+        const elM = document.getElementById('top2Wins'); if (elM) elM.innerText = top20[1].matchesWon + ' জয় (' + top20[1].winRate + '%)';
+      }
+      if (top20[2]) {
+        const elN = document.getElementById('top3Name'); if (elN) elN.innerText = top20[2].name;
+        const elW = document.getElementById('top3Winnings'); if (elW) elW.innerText = '৳' + top20[2].totalWinnings;
+        const elM = document.getElementById('top3Wins'); if (elM) elM.innerText = top20[2].matchesWon + ' জয় (' + top20[2].winRate + '%)';
+      }
+
+      // Ranks 4 to 20
+      const list20 = document.getElementById('leaderboardList20');
+      if (list20) {
+        list20.innerHTML = top20.slice(3).map((entry, idx) => `
+          <div class="bg-[#100726] p-2.5 rounded-xl border border-purple-900/40 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-5 font-mono font-bold text-amber-400">#${idx + 4}</span>
+              <div>
+                <span class="font-bold text-white block">${entry.name}</span>
+                <span class="text-[9px] text-slate-400 font-mono">${entry.matchesWon} জয় • ${entry.winRate}% win rate</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="font-bold text-emerald-400 font-mono">৳${entry.totalWinnings} BDT</span>
+              <span class="text-[9px] text-slate-500 block uppercase font-mono">${entry.badge || 'PRO'}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // TAB SWITCHER
+    function switchTab(tabId) {
+      ['home', 'tournaments', 'leaderboard', 'arena', 'refer', 'profile', 'wallet'].forEach(t => {
+        const el = document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1));
+        const btn = document.getElementById('tabBtn-' + t);
+        if (el) el.classList.toggle('hidden', t !== tabId);
+        if (btn) {
+          if (t === tabId) {
+            btn.className = (t === 'leaderboard') ? 'text-amber-400 font-black text-[10px] font-heading' : 'text-purple-400 font-bold text-[10px] font-heading';
+          } else {
+            btn.className = 'text-slate-400 text-[10px] font-heading';
+          }
+        }
+      });
+      soundCtx.roll();
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); soundCtx.coin(); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // TOURNAMENT JOIN & LIVE COUNTDOWN
+    function joinArena(trnId) {
+      const u = getUser();
+      const trns = JSON.parse(localStorage.getItem(KEYS.TOURNAMENTS) || '[]');
+      const trn = trns.find(t => t.id === trnId) || trns[0];
+
+      if (u.walletBalance < trn.entryFee) {
+        alert('আপনার ব্যালেন্স অপর্যাপ্ত! অনুগ্রহ করে বিকাশ বা নগদের মাধ্যমে ৳' + trn.entryFee + ' রিচার্জ করুন।');
+        openModal('depositModal');
+        return;
+      }
+
+      // Deduct entry fee ONCE (1x)
+      u.walletBalance -= trn.entryFee;
+      saveUser(u);
+
+      const txs = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]');
+      txs.unshift({
+        id: 'TXN-ENT-' + Date.now().toString().slice(-5),
+        userId: u.id,
+        userName: u.name,
+        type: 'entry_fee',
+        amount: trn.entryFee,
+        currency: 'BDT',
+        trxId: 'EF-' + trn.id + '-' + Math.floor(1000 + Math.random() * 9000),
+        status: 'completed',
+        description: 'এন্ট্রি ফি: ' + (trn.titleBn || trn.title),
+        timestamp: new Date().toISOString(),
+        tournamentId: trn.id
+      });
+      localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(txs));
+
+      currentWaitingTrn = trn;
+      waitingSecondsRemaining = trn.waitingTimerSeconds || 120;
+
+      document.getElementById('waitingTrnTitle').innerText = trn.titleBn || trn.title;
+      document.getElementById('waitingRoomCode').innerText = trn.roomCode || 'ARENA-7721';
+      document.getElementById('waitingPrizePool').innerText = '৳' + trn.prizePool + ' BDT';
+      document.getElementById('waitingScheduleBadge').innerText = '📅 শিডিউল সময়: ' + (trn.matchTimeSlot || 'আজ দুপুর ০১:০০ টা');
+      document.getElementById('waitingEntryRefundAmt').innerText = '৳' + trn.entryFee + ' এন্ট্রি ফি';
+
+      document.getElementById('arenaWaitingLobby').classList.remove('hidden');
+      document.getElementById('arenaRefundBanner').classList.add('hidden');
+      document.getElementById('arenaGameBoard').classList.add('hidden');
+
+      switchTab('arena');
+      renderUI();
+      soundCtx.coin();
+
+      if (waitingInterval) clearInterval(waitingInterval);
+      updateWaitingDisplay();
+
+      waitingInterval = setInterval(() => {
+        waitingSecondsRemaining--;
+        updateWaitingDisplay();
+
+        if (waitingSecondsRemaining <= 0) {
+          clearInterval(waitingInterval);
+          triggerWaitingAutoRefund();
+        }
+      }, 1000);
+    }
+
+    function updateWaitingDisplay() {
+      const mins = Math.floor(waitingSecondsRemaining / 60);
+      const secs = waitingSecondsRemaining % 60;
+      const str = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+      const disp = document.getElementById('waitingTimerDisplay');
+      if (disp) disp.innerText = str;
+    }
+
+    // AUTO-REFUND IF NO OPPONENT JOINS
+    function triggerWaitingAutoRefund() {
+      if (!currentWaitingTrn) return;
+      if (waitingInterval) clearInterval(waitingInterval);
+
+      const refundAmount = currentWaitingTrn.entryFee;
+      const u = getUser();
+
+      // Exactly 1x refund
+      u.walletBalance += refundAmount;
+      saveUser(u);
+
+      const txs = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]');
+      txs.unshift({
+        id: 'TXN-REF-' + Date.now().toString().slice(-5),
+        userId: u.id,
+        userName: u.name,
+        type: 'refund',
+        amount: refundAmount,
+        currency: 'BDT',
+        trxId: 'REF-' + currentWaitingTrn.id + '-' + Math.floor(1000 + Math.random() * 9000),
+        status: 'refunded',
+        description: 'অটো রিফান্ড (প্রতিপক্ষ সময়মতো না আসায়): ' + (currentWaitingTrn.titleBn || currentWaitingTrn.title),
+        timestamp: new Date().toISOString(),
+        tournamentId: currentWaitingTrn.id
+      });
+      localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(txs));
+
+      document.getElementById('arenaWaitingLobby').classList.add('hidden');
+      document.getElementById('arenaRefundBanner').classList.remove('hidden');
+      document.getElementById('refundDoneAmount').innerText = '৳' + refundAmount;
+      
+      soundCtx.refund();
+      renderUI();
+    }
+
+    // OPPONENT MATCHED (START REAL PLAY)
+    function simulateOpponentJoin() {
+      if (waitingInterval) clearInterval(waitingInterval);
+      soundCtx.coin();
+      confetti({ particleCount: 50, spread: 60 });
+
+      document.getElementById('arenaWaitingLobby').classList.add('hidden');
+      document.getElementById('arenaRefundBanner').classList.add('hidden');
+      document.getElementById('arenaGameBoard').classList.remove('hidden');
+
+      if (currentWaitingTrn) {
+        document.getElementById('arenaTitle').innerText = currentWaitingTrn.titleBn || currentWaitingTrn.title;
+        document.getElementById('arenaRoom').innerText = 'ROOM: ' + (currentWaitingTrn.roomCode || 'ARENA-7721');
+        document.getElementById('arenaPrize').innerText = '৳' + currentWaitingTrn.prizePool + ' BDT';
+      }
+      document.getElementById('matchLog').innerText = 'প্রতিপক্ষ জয়েন করেছে! গুটি বের করতে ডাইস রোল করুন।';
+    }
+
+    // SURRENDER / LEAVE MATCH (0 REFUND FOR QUITTER, OPPONENT WINS)
+    function confirmSurrenderMatch() {
+      if (!confirm('সতর্কতা: ম্যাচ চলাকালীন বের হলে কোনো টাকা ফেরত দেওয়া হবে না (৳0 রিফান্ড) এবং প্রতিপক্ষ বিজয়ী ঘোষিত হবে! আপনি কি নিশ্চিত?')) {
+        return;
+      }
+      alert('আপনি ম্যাচ থেকে বের হয়ে গেছেন। টুর্নামেন্ট নিয়ম অনুযায়ী কোনো এন্ট্রি ফি রিফান্ড হবে না এবং প্রতিপক্ষ বিজয়ী হয়েছে।');
+      document.getElementById('arenaGameBoard').classList.add('hidden');
+      switchTab('tournaments');
+      soundCtx.roll();
+    }
+
+    // PLAYABLE LUDO ENGINE
+    function rollGameDice() {
+      const btn = document.getElementById('diceBtn');
+      btn.classList.add('animate-dice');
+      soundCtx.roll();
+
+      setTimeout(() => {
+        btn.classList.remove('animate-dice');
+        const roll = Math.floor(Math.random() * 6) + 1;
+        btn.innerText = roll;
+        soundCtx.coin();
+
+        if (roll === 6) {
+          confetti({ particleCount: 35, spread: 60 });
+          document.getElementById('matchLog').innerText = 'ছক্কা (৬) পড়েছে! গুটি বের হয়েছে এবং অতিরিক্ত চাল পেয়েছেন।';
+        } else {
+          document.getElementById('matchLog').innerText = 'আপনি ' + roll + ' ফেলেছেন। গুটি ' + roll + ' ঘর এগিয়ে গেছে।';
+        }
+      }, 450);
+    }
+
+    // REFERRAL CODE ACTIONS
+    function copyReferralCode() {
+      const u = getUser();
+      const code = u.referralCode || 'LA-78912';
+      navigator.clipboard.writeText(code).then(() => {
+        soundCtx.coin();
+        alert('রেফার কোড কপি করা হয়েছে: ' + code);
+      }).catch(() => {
+        alert('রেফার কোড: ' + code);
+      });
+    }
+
+    function shareReferralLink() {
+      const u = getUser();
+      const code = u.referralCode || 'LA-78912';
+      const shareUrl = window.location.origin + window.location.pathname + '?ref=' + code;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        soundCtx.coin();
+        alert('রেফারেল লিংক কপি হয়েছে!\n' + shareUrl + '\n\nবন্ধুকে পাঠিয়ে দিন, সে রেজিস্ট্রেশন করলেই আপনি পাবেন ১৫ ৳ এবং বন্ধু পাবে ১০ ৳ বোনাস!');
+      }).catch(() => {
+        alert('আপনার লিংক: ' + shareUrl);
+      });
+    }
+
+    // DEPOSIT SUBMIT (TRANSFERS STRAIGHT TO ADMIN IN REAL TIME)
+    function handleDepositSubmit(e) {
+      e.preventDefault();
+      const u = getUser();
+      const amt = Number(document.getElementById('depAmount').value);
+      const method = document.getElementById('depMethod').value;
+      const phone = document.getElementById('depPhone').value;
+      const trxId = document.getElementById('depTrxId').value.trim();
+
+      const dep = {
+        id: 'DEP-' + Date.now().toString().slice(-5),
+        userId: u.id,
+        userName: u.name,
+        userPhone: phone,
+        amount: amt,
+        method: method,
+        trxId: trxId,
+        status: 'pending',
+        requestedAt: new Date().toISOString()
+      };
+
+      const deps = JSON.parse(localStorage.getItem(KEYS.DEPOSITS) || '[]');
+      deps.unshift(dep);
+      localStorage.setItem(KEYS.DEPOSITS, JSON.stringify(deps));
+
+      const txs = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]');
+      txs.unshift({
+        id: 'TXN-DEP-' + dep.id,
+        userId: u.id,
+        userName: u.name,
+        type: 'deposit',
+        amount: amt,
+        currency: 'BDT',
+        paymentMethod: method,
+        trxId: trxId,
+        status: 'pending',
+        description: method.toUpperCase() + ' ডিপোজিট সাবমিট (অ্যাডমিন অনুমোদনের অপেক্ষায়)',
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(txs));
+
+      closeModal('depositModal');
+      soundCtx.coin();
+      notifySync();
+      alert('৳' + amt + ' ডিপোজিট রিকোয়েস্ট সফলভাবে অ্যাডমিন প্যানেলে পাঠানো হয়েছে! অ্যাডমিন অনুমোদন দিলে ব্যালেন্সে যুক্ত হবে।');
+      renderUI();
+    }
+
+    // WITHDRAW SUBMIT
+    function handleWithdrawSubmit(e) {
+      e.preventDefault();
+      const u = getUser();
+      const amt = Number(document.getElementById('wdAmount').value);
+      const method = document.getElementById('wdMethod').value;
+      const phone = document.getElementById('wdPhone').value;
+
+      if (u.walletBalance < amt) {
+        alert('আপনার ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই!');
+        return;
+      }
+
+      u.walletBalance -= amt;
+      saveUser(u);
+
+      const wd = {
+        id: 'WD-' + Date.now().toString().slice(-5),
+        userId: u.id,
+        userName: u.name,
+        userPhone: phone,
+        amount: amt,
+        method: method,
+        destinationPhone: phone,
+        status: 'pending',
+        requestedAt: new Date().toISOString()
+      };
+
+      const wds = JSON.parse(localStorage.getItem(KEYS.WITHDRAWALS) || '[]');
+      wds.unshift(wd);
+      localStorage.setItem(KEYS.WITHDRAWALS, JSON.stringify(wds));
+
+      const txs = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]');
+      txs.unshift({
+        id: 'TXN-WD-' + wd.id,
+        userId: u.id,
+        userName: u.name,
+        type: 'withdrawal',
+        amount: amt,
+        currency: 'BDT',
+        paymentMethod: method,
+        trxId: wd.id,
+        status: 'pending',
+        description: method.toUpperCase() + ' ক্যাশআউট রিকোয়েস্ট (' + phone + ')',
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(txs));
+
+      closeModal('withdrawModal');
+      soundCtx.coin();
+      notifySync();
+      alert('৳' + amt + ' ক্যাশআউট রিকোয়েস্ট সাবমিট হয়েছে! অ্যাডমিন রিজেক্ট করলে সম্পূর্ণ টাকা অটোমেটিক রিফান্ড হবে।');
+      renderUI();
+    }
+
+    // SUPPORT TICKET SUBMISSION
+    function handleTicketSubmit(e) {
+      e.preventDefault();
+      const u = getUser();
+      const subject = document.getElementById('tktSubject').value.trim();
+      const message = document.getElementById('tktMessage').value.trim();
+
+      const newTicket = {
+        id: 'TCK-' + Date.now().toString().slice(-5),
+        userId: u.id,
+        userName: u.name,
+        userPhone: u.phone,
+        subject: subject,
+        status: 'open',
+        createdAt: new Date().toISOString(),
+        messages: [
+          { sender: 'user', text: message, timestamp: new Date().toISOString() }
+        ]
+      };
+
+      const tkts = JSON.parse(localStorage.getItem(KEYS.TICKETS) || '[]');
+      tkts.unshift(newTicket);
+      localStorage.setItem(KEYS.TICKETS, JSON.stringify(tkts));
+
+      closeModal('ticketModal');
+      soundCtx.coin();
+      notifySync();
+      alert('আপনার সাপোর্ট টিকেট সফলভাবে অ্যাডমিনের কাছে পাঠানো হয়েছে!');
+    }
+
+    function downloadOfficialApk() {
+      soundCtx.coin();
+      alert('অফিসিয়াল অ্যান্ড্রয়েড APK (v1.0.4) ডাউনলোড প্রক্রিয়া শুরু হয়েছে!\nফাইল নাম: LudoArena-v1.0.4.apk\nসাইজ: 24.5 MB');
+    }
+
+    // INITIALIZATION & REAL-TIME LISTENER
+    window.addEventListener('storage', () => {
+      renderUI();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refParam = urlParams.get('ref') || urlParams.get('referral');
+        if (refParam) {
+          localStorage.setItem(KEYS.AUTO_REF, refParam.toUpperCase());
+        }
+      } catch(e) {}
+
+      const savedRef = localStorage.getItem(KEYS.AUTO_REF);
+      const regRefInput = document.getElementById('authReferralCode');
+      const badge = document.getElementById('autoAppliedBadge');
+      if (savedRef && regRefInput) {
+        regRefInput.value = savedRef.toUpperCase();
+        if (badge) badge.classList.remove('hidden');
+      }
+
+      let p = 25;
+      const splashTimer = setInterval(() => {
+        p += 25;
+        const bar = document.getElementById('splashProgressBar');
+        const txt = document.getElementById('splashProgressText');
+        if (bar) bar.style.width = p + '%';
+        if (txt) txt.innerText = 'Loading ' + p + '%';
+        if (p >= 100) {
+          clearInterval(splashTimer);
+          setTimeout(() => {
+            document.getElementById('splashScreen').style.opacity = '0';
+            setTimeout(() => {
+              document.getElementById('splashScreen').style.display = 'none';
+              const isRegistered = localStorage.getItem(KEYS.REGISTERED);
+              if (!isRegistered) {
+                document.getElementById('authScreen').classList.remove('hidden');
+              } else {
+                renderUI();
+              }
+            }, 350);
+          }, 200);
+        }
+      }, 150);
+    });
+  </script>
+</body>
+</html>
